@@ -7,48 +7,79 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 @WebServlet("/employes")
 public class EmployeServlet extends HttpServlet {
-    private static final long serialVersionUID = 1L; // ✅ Ajout pour éviter l'avertissement
-
-    @Override
+    
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        response.setContentType("text/html;charset=UTF-8"); // ✅ Correction de l'encodage UTF-8
         
-        // ✅ Vérification de la méthode dans EmployeRepository
-        List<Employe> employes = EmployeRepository.getAllEmployes();
+        HttpSession session = request.getSession();
+        Object utilisateurObj = session.getAttribute("user");
 
-        request.setAttribute("employes", employes);
-        request.getRequestDispatcher("employes.jsp").forward(request, response);
-    }
-
-    @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        response.setContentType("text/html;charset=UTF-8"); // ✅ Correction de l'encodage UTF-8
-        request.setCharacterEncoding("UTF-8");
-
-        String nom = request.getParameter("nom");
-        String role = request.getParameter("role");
-        String departement = request.getParameter("departement");
-
-        // ✅ Vérification des champs vides pour éviter les erreurs
-        if (nom == null || nom.trim().isEmpty() ||
-            role == null || role.trim().isEmpty() ||
-            departement == null || departement.trim().isEmpty()) {
-            request.setAttribute("error", "Tous les champs sont obligatoires !");
-            request.getRequestDispatcher("ajouterEmploye.jsp").forward(request, response);
+        if (utilisateurObj == null || !(utilisateurObj instanceof Employe)) {
+            response.sendRedirect("login.jsp");
             return;
         }
 
-        // ✅ Ajout de l'employé dans la base de données en mémoire
-        EmployeRepository.addEmploye(new Employe(nom, role, departement));
+        Employe utilisateur = (Employe) utilisateurObj;
+        List<Employe> employesAffiches = new ArrayList<>();
 
-        // ✅ Redirection vers la liste des employés après l'ajout
+        System.out.println("Utilisateur connecté : " + utilisateur.getNom() + " - Role : " + utilisateur.getRole());
+
+        switch (utilisateur.getRole()) {
+            case "Administrateur":
+                employesAffiches = EmployeRepository.getAllEmployes();
+                System.out.println("Employés récupérés pour la page JSP : " + employesAffiches);
+                System.out.println("📜 Liste des employés après ajout : " + EmployeRepository.getAllEmployes().size());
+                break;
+            case "Responsable":
+                employesAffiches = EmployeRepository.getEmployesByDepartement(utilisateur.getDepartement());
+                break;
+            case "Employé":
+                employesAffiches.add(utilisateur);
+                break;
+            default:
+                System.out.println("⚠ Rôle inconnu : " + utilisateur.getRole());
+        }
+
+        request.setAttribute("employes", employesAffiches);
+        request.getRequestDispatcher("employes.jsp").forward(request, response);
+    }
+
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        request.setCharacterEncoding("UTF-8");
+
+        String action = request.getParameter("action");
+        if (!"ajouter".equals(action)) {
+            response.sendRedirect("employes");
+            return;
+        }
+
+        System.out.println("📩 Requête POST reçue pour ajouter un employé");
+
+        String id = UUID.randomUUID().toString();
+        String nom = request.getParameter("nom");
+        String prenom = request.getParameter("prenom");
+        String numeroSecuriteSociale = request.getParameter("numeroSecuriteSociale");
+        String adresse = request.getParameter("adresse");
+        String telephone = request.getParameter("telephone");
+        String email = request.getParameter("email");
+        String role = request.getParameter("role");
+        String departement = request.getParameter("departement");
+        String username = request.getParameter("username");
+        String password = request.getParameter("password");
+
+        Employe employe = new Employe(id, nom, prenom, numeroSecuriteSociale, adresse, telephone, email, role, departement, username, password);
+        EmployeRepository.addEmploye(employe);
+
         response.sendRedirect("employes");
     }
+
 }

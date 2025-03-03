@@ -15,6 +15,9 @@ public class Departement {
         this.description = description;
         this.employes = new ArrayList<>();
     }
+    
+    public Departement() {
+    }
 
     // ✅ Getters
     public String getId() { return id; }

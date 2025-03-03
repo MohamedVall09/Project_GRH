@@ -12,6 +12,8 @@ public class Employe {
     private String departement;
     private String username;
     private String password;
+    
+    public Employe() {}
 
     public Employe(String id, String nom, String prenom, String numeroSecuriteSociale,
                    String adresse, String telephone, String email, 
@@ -41,6 +43,10 @@ public class Employe {
     public String getDepartement() { return departement; }
     public String getUsername() { return username; }
     public String getPassword() { return password; }
+
+    public void setId(String id) {
+        this.id = id;
+    }
 
     public void setNom(String nom) { this.nom = nom; }
     public void setPrenom(String prenom) { this.prenom = prenom; }

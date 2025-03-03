@@ -11,6 +11,8 @@ public class EmployeRepository {
         employes.add(new Employe("1", "Alice", "Dupont", "123456", "10 rue A", "0601020304", "alice@mail.com", "Administrateur", "RH", "alice", "123"));
         employes.add(new Employe("2", "Paul", "Martin", "654321", "20 rue B", "0612345678", "paul@mail.com", "Responsable", "IT", "paul", "1234"));
         employes.add(new Employe("3", "Marie", "Curie", "987654", "30 rue C", "0623456789", "marie@mail.com", "Employé", "Marketing", "marie", "abcd"));
+        employes.add(new Employe("4", "admin", "ism", "987654", "30 rue K", "0623456789", "marie@mail.com", "Administrateur", "Marketing", "admin", "12345"));
+
     }
 
     // Récupérer tous les employés

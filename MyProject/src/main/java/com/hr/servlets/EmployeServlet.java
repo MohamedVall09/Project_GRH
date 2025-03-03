@@ -35,7 +35,6 @@ public class EmployeServlet extends HttpServlet {
         switch (utilisateur.getRole()) {
             case "Administrateur":
                 employesAffiches = EmployeRepository.getAllEmployes();
-                System.out.println("Employés récupérés pour la page JSP : " + employesAffiches);
                 System.out.println("📜 Liste des employés après ajout : " + EmployeRepository.getAllEmployes().size());
                 break;
             case "Responsable":
@@ -57,29 +56,49 @@ public class EmployeServlet extends HttpServlet {
         request.setCharacterEncoding("UTF-8");
 
         String action = request.getParameter("action");
-        if (!"ajouter".equals(action)) {
+
+        if ("ajouter".equals(action)) {
+            System.out.println("📩 Requête POST reçue pour ajouter un employé");
+
+            String id = UUID.randomUUID().toString();
+            String nom = request.getParameter("nom");
+            String prenom = request.getParameter("prenom");
+            String numeroSecuriteSociale = request.getParameter("numeroSecuriteSociale");
+            String adresse = request.getParameter("adresse");
+            String telephone = request.getParameter("telephone");
+            String email = request.getParameter("email");
+            String role = request.getParameter("role");
+            String departement = request.getParameter("departement");
+            String username = request.getParameter("username");
+            String password = request.getParameter("password");
+
+            Employe employe = new Employe(id, nom, prenom, numeroSecuriteSociale, adresse, telephone, email, role, departement, username, password);
+            EmployeRepository.addEmploye(employe);
+
+            System.out.println("✅ Employé ajouté avec succès : " + employe.getNom());
+
             response.sendRedirect("employes");
             return;
         }
 
-        System.out.println("📩 Requête POST reçue pour ajouter un employé");
+        if ("supprimer".equals(action)) {
+            String employeId = request.getParameter("id");  // ✅ Suppression de la duplication de `id`
 
-        String id = UUID.randomUUID().toString();
-        String nom = request.getParameter("nom");
-        String prenom = request.getParameter("prenom");
-        String numeroSecuriteSociale = request.getParameter("numeroSecuriteSociale");
-        String adresse = request.getParameter("adresse");
-        String telephone = request.getParameter("telephone");
-        String email = request.getParameter("email");
-        String role = request.getParameter("role");
-        String departement = request.getParameter("departement");
-        String username = request.getParameter("username");
-        String password = request.getParameter("password");
+            System.out.println("🗑 Suppression de l'employé ID : " + employeId);
 
-        Employe employe = new Employe(id, nom, prenom, numeroSecuriteSociale, adresse, telephone, email, role, departement, username, password);
-        EmployeRepository.addEmploye(employe);
+            Employe empASupprimer = EmployeRepository.getEmployeById(employeId);
+            if (empASupprimer != null) {
+                EmployeRepository.removeEmploye(employeId);
+                System.out.println("✅ Employé supprimé avec succès !");
+            } else {
+                System.out.println("⚠ Employé introuvable !");
+            }
 
+            response.sendRedirect("employes");
+            return;
+        }
+
+        // Si aucune action correspondante, rediriger vers la liste des employés
         response.sendRedirect("employes");
     }
-
 }

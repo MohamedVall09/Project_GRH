@@ -145,25 +145,18 @@
 
 <script>
 function supprimerEmploye(id) {
-    alert("🛑 ID reçu pour suppression : " + id); // Vérifie si l'ID arrive
-    console.log("🛑 Tentative de suppression de l'employé ID :", id);
-
     if (confirm("Voulez-vous vraiment supprimer cet employé ?")) {
-    	fetch(`http://localhost:8080/MyProject/api/employes/${id}`, { method: 'DELETE' })
-            .then(response => {
-                console.log("Réponse serveur :", response.status); // Vérifie le statut HTTP
-                return response.text();
-            })
+        fetch(`/api/employes/${id}`, { method: 'DELETE' })
+            .then(response => response.text())
             .then(data => {
-                console.log("Réponse du serveur :", data);
                 alert(data);
                 location.reload();
             })
-            .catch(error => console.error("❌ Erreur :", error));
+            .catch(error => alert("Erreur : " + error.message));
     }
 }
-
 </script>
+
 
 </body>
 </html>

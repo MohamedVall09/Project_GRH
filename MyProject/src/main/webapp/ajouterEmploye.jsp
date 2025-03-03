@@ -120,6 +120,34 @@ function disableSubmitButton() {
     submitButton.disabled = true;
 }
 </script>
+<script>
+function ajouterEmploye(event) {
+    event.preventDefault();
+    
+    let employe = {
+        nom: document.getElementById("nom").value,
+        prenom: document.getElementById("prenom").value,
+        numeroSecuriteSociale: document.getElementById("numeroSecuriteSociale").value,
+        adresse: document.getElementById("adresse").value,
+        telephone: document.getElementById("telephone").value,
+        email: document.getElementById("email").value,
+        role: document.getElementById("role").value,
+        departement: document.getElementById("departement").value
+    };
+
+    fetch("/api/employes", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(employe)
+    })
+    .then(response => response.text())
+    .then(data => {
+        alert(data);
+        window.location.href = "employes.jsp";
+    })
+    .catch(error => alert("Erreur : " + error.message));
+}
+</script>
 
 
 </body>

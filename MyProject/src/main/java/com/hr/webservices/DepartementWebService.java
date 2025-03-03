@@ -18,10 +18,18 @@ public class DepartementWebService {
 
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.TEXT_PLAIN)
     public Response ajouterDepartement(Departement departement) {
+        if (departement == null || departement.getNom().isEmpty() || departement.getDescription().isEmpty()) {
+            return Response.status(Response.Status.BAD_REQUEST).entity("Données invalides !").build();
+        }
+
         DepartementRepository.addDepartement(departement);
+        System.out.println("✅ Département ajouté : " + departement.getNom());
+
         return Response.status(Response.Status.CREATED).entity("Département ajouté avec succès !").build();
     }
+
 
     @PUT
     @Path("/{id}")

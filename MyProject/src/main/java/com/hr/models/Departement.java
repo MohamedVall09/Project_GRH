@@ -26,6 +26,9 @@ public class Departement {
     public List<String> getEmployes() { return employes; }
 
     // ✅ Setters
+    public void setId(String id) { 
+        this.id = id; 
+    }
     public void setNom(String nom) { this.nom = nom; }
     public void setDescription(String description) { this.description = description; }
     public void ajouterEmploye(String employeNom) { this.employes.add(employeNom); }

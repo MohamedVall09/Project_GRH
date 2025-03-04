@@ -1,14 +1,19 @@
 <%@ page contentType="text/html; charset=UTF-8" %>
-<%@ page import="com.hr.models.Employe, com.hr.data.EmployeRepository" %>
+<%@ page import="com.hr.models.Employe, com.hr.data.EmployeRepository, jakarta.servlet.http.HttpSession" %>
 
 <%
     String id = request.getParameter("id");
+    HttpSession sessionObj = request.getSession();
+    Employe utilisateur = (Employe) sessionObj.getAttribute("user");
     Employe employe = EmployeRepository.getEmployeById(id);
 
-    if (employe == null) {
-        response.sendRedirect("employes.jsp");
+    if (utilisateur == null || employe == null) {
+        response.sendRedirect("login.jsp");
         return;
     }
+
+    boolean isAdmin = "Administrateur".equals(utilisateur.getRole());
+    boolean isSelf = utilisateur.getId().equals(employe.getId());
 %>
 
 <!DOCTYPE html>
@@ -28,70 +33,150 @@
 
 <div class="container">
     <h2>Modifier Employé</h2>
-    <form action="/MyProject/api/employes/<%= employe.getId() %>" method="POST">
-    <input type="hidden" name="_method" value="PUT"> <!-- Trick pour utiliser PUT en HTML -->
-    <label>Nom :</label>
-    <input type="text" name="nom" value="<%= employe.getNom() %>" required>
 
-    <label>Prénom :</label>
-    <input type="text" name="prenom" value="<%= employe.getPrenom() %>" required>
+    <% if (isAdmin) { %>
+    <!-- 🔴 Formulaire de modification ADMINISTRATEUR -->
+    <form id="adminUpdateForm">
+        <input type="hidden" id="id" value="<%= employe.getId() %>">
 
-    <label>Email :</label>
-    <input type="email" name="email" value="<%= employe.getEmail() %>" required>
+        <label>Nom :</label>
+        <input type="text" id="nom" value="<%= employe.getNom() %>" required>
 
-    <label>Téléphone :</label>
-    <input type="text" name="telephone" value="<%= employe.getTelephone() %>" required>
+        <label>Prénom :</label>
+        <input type="text" id="prenom" value="<%= employe.getPrenom() %>" required>
 
-    <label>Adresse :</label>
-    <input type="text" name="adresse" value="<%= employe.getAdresse() %>" required>
+        <label>Email :</label>
+        <input type="email" id="email" value="<%= employe.getEmail() %>" required>
 
-    <label>Numéro de sécurité sociale :</label>
-    <input type="text" name="numeroSecuriteSociale" value="<%= employe.getNumeroSecuriteSociale() %>" required>
+        <label>Téléphone :</label>
+        <input type="text" id="telephone" value="<%= employe.getTelephone() %>" required>
 
-    <label>Rôle :</label>
-    <select name="role">
-        <option value="Employé" <%= "Employé".equals(employe.getRole()) ? "selected" : "" %>>Employé</option>
-        <option value="Responsable" <%= "Responsable".equals(employe.getRole()) ? "selected" : "" %>>Responsable</option>
-        <option value="Administrateur" <%= "Administrateur".equals(employe.getRole()) ? "selected" : "" %>>Administrateur</option>
-    </select>
+        <label>Adresse :</label>
+        <input type="text" id="adresse" value="<%= employe.getAdresse() %>" required>
 
-    <button type="submit">Modifier</button>
-</form>
+        <label>Numéro de sécurité sociale :</label>
+        <input type="text" id="numeroSecuriteSociale" value="<%= employe.getNumeroSecuriteSociale() %>" required>
+
+        <label>Rôle :</label>
+        <select id="role" name="role"></select>
+
+        <label>Département :</label>
+        <select id="departement" name="departement"></select>
+
+        <button type="button" class="btn" onclick="mettreAJourAdmin()">Modifier</button>
+    </form>
+
+    <% } else if (isSelf) { %>
+    <!-- 🔵 Formulaire de modification EMPLOYÉ (mise à jour limitée) -->
+    <form id="userUpdateForm">
+        <input type="hidden" id="id" value="<%= employe.getId() %>">
+
+        <label>Adresse :</label>
+        <input type="text" id="adresse" value="<%= employe.getAdresse() %>">
+
+        <label>Téléphone :</label>
+        <input type="text" id="telephone" value="<%= employe.getTelephone() %>">
+
+        <button type="button" class="btn" onclick="mettreAJourEmploye()">Mettre à jour</button>
+    </form>
+    <% } %>
 </div>
+
 <script>
-document.querySelector("form").addEventListener("submit", function(event) {
-    event.preventDefault(); // Empêche l'envoi classique du formulaire
+// 🔴 Mise à jour complète par un administrateur
+function mettreAJourAdmin() {
+    let id = document.getElementById("id").value;
+    let jsonData = {
+        nom: document.getElementById("nom").value,
+        prenom: document.getElementById("prenom").value,
+        email: document.getElementById("email").value,
+        telephone: document.getElementById("telephone").value,
+        adresse: document.getElementById("adresse").value,
+        numeroSecuriteSociale: document.getElementById("numeroSecuriteSociale").value,
+        role: document.getElementById("role").value,
+        departement: document.getElementById("departement").value
+    };
 
-    let id = "<%= employe.getId() %>";
-    let formData = new FormData(this);
-    let jsonData = {};
-
-    formData.forEach((value, key) => {
-        jsonData[key] = value;
-    });
-    console.log("🟠 Envoi de la requête PUT à l’URL :", `http://localhost:8080/MyProject/api/employes/${id}`);
-
-    fetch(`http://localhost:8080/MyProject/api/employes/${id}`, {
+    fetch(`/api/employes/${id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(jsonData)
     })
-    .then(response => {
-        console.log("🟡 Réponse statut:", response.status);
-        return response.text();
-    })
+    .then(response => response.text())
     .then(data => {
-        console.log("🟢 Réponse du serveur:", data);
-        if (data.includes("succès") || data.includes("modifié")) {
-            window.location.href = "employes.jsp"; // Redirection après modification
+        alert(data);
+        window.location.href = "employes.jsp";
+    })
+    .catch(error => console.error("Erreur :", error));
+}
+
+// 🔵 Mise à jour limitée par un employé
+function mettreAJourEmploye() {
+    let id = document.getElementById("id").value;
+    let jsonData = {
+        adresse: document.getElementById("adresse").value,
+        telephone: document.getElementById("telephone").value
+    };
+
+    fetch(`/api/employes/updatePersonalInfo/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(jsonData)
+    })
+    .then(response => response.text())
+    .then(data => {
+        alert(data);
+        window.location.href = "employes.jsp";
+    })
+    .catch(error => console.error("Erreur :", error));
+}
+
+// 🔄 Chargement dynamique des rôles
+fetch("/api/roles")
+    .then(response => response.json())
+    .then(data => {
+        let roleSelect = document.getElementById("role");
+        roleSelect.innerHTML = "<option value=''>Sélectionner un rôle</option>"; // Option par défaut
+
+        if (Array.isArray(data) && data.length > 0) {
+            data.forEach(role => {
+                let option = document.createElement("option");
+                option.value = role.nom;
+                option.textContent = role.nom;
+                roleSelect.appendChild(option);
+            });
         } else {
-            alert("Erreur lors de la modification : " + data);
+            let option = document.createElement("option");
+            option.value = "";
+            option.textContent = "Aucun rôle disponible";
+            roleSelect.appendChild(option);
         }
     })
-    .catch(error => console.error("❌ Erreur:", error));
-});
-</script>
+    .catch(error => console.error("Erreur chargement rôles:", error));
 
+// 🔄 Chargement dynamique des départements
+fetch("/api/departements")
+    .then(response => response.json())
+    .then(data => {
+        let departementSelect = document.getElementById("departement");
+        departementSelect.innerHTML = "<option value=''>Sélectionner un département</option>";
+
+        if (Array.isArray(data) && data.length > 0) {
+            data.forEach(departement => {
+                let option = document.createElement("option");
+                option.value = departement.nom;
+                option.textContent = departement.nom;
+                departementSelect.appendChild(option);
+            });
+        } else {
+            let option = document.createElement("option");
+            option.value = "";
+            option.textContent = "Aucun département disponible";
+            departementSelect.appendChild(option);
+        }
+    })
+    .catch(error => console.error("Erreur chargement départements:", error));
+</script>
 
 </body>
 </html>

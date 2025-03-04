@@ -55,4 +55,10 @@ public class Employe {
     public void setTelephone(String telephone) { this.telephone = telephone; }
     public void setEmail(String email) { this.email = email; }
     public void setRole(String role) { this.role = role; }
+    
+    public void setDepartement(String departement) {
+        this.departement = departement;
+    }
+
+    
 }

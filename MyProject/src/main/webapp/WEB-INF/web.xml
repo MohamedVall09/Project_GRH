@@ -21,6 +21,16 @@
         <url-pattern>/employes</url-pattern>
     </servlet-mapping>
 
+	<servlet>
+        <servlet-name>EvaluationServlet</servlet-name>
+        <servlet-class>com.hr.servlets.EvaluationServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>EvaluationServlet</servlet-name>
+        <url-pattern>/evaluation</url-pattern>
+    </servlet-mapping>
+
+
     <!-- =======================
          SERVLET : Authentification
          ======================= -->

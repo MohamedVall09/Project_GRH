@@ -50,6 +50,7 @@
     <h2>Bienvenue sur le Dashboard</h2>
     <a href="employes" class="btn">📋 Gérer les employés</a>
     <a href="departements" class="btn">🏢 Gérer les départements</a>
+    <a href="evaluations" class="btn">📝 Gérer les évaluations</a>
 </div>
 
 </body>
